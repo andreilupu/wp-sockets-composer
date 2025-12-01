@@ -1,11 +1,20 @@
 <?php
+/**
+ * WP Sockets Core Class
+ *
+ * @package WPSockets\Core
+ * @since   1.0.0
+ */
+
 namespace WPSockets\Core;
 
 /**
  * Class Core
- * 
+ *
  * Main entry point for the WP Sockets library.
  * Handles initialization, asset enqueueing, and page registration.
+ *
+ * @since 1.0.0
  */
 class Core {
 
@@ -14,7 +23,7 @@ class Core {
 	 *
 	 * @var Core
 	 */
-	protected static $_instance = null;
+	protected static $instance = null;
 
 	/**
 	 * Whether the library has been initialized.
@@ -45,10 +54,10 @@ class Core {
 	 * @return Core - Main instance.
 	 */
 	public static function instance() {
-		if ( is_null( self::$_instance ) ) {
-			self::$_instance = new self();
+		if ( is_null( self::$instance ) ) {
+			self::$instance = new self();
 		}
-		return self::$_instance;
+		return self::$instance;
 	}
 
 	/**
@@ -83,9 +92,10 @@ class Core {
 	 * @param array  $config The configuration for the page.
 	 */
 	public function register_socket( $slug, $config ) {
-		// Basic validation
+		// Basic validation.
 		if ( empty( $slug ) || empty( $config['page_title'] ) || empty( $config['menu_title'] ) ) {
-			error_log( 'WP Sockets: Invalid page configuration for slug: ' . $slug );
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( 'WP Sockets: Invalid page configuration for slug: ' . sanitize_key( $slug ) );
 			return;
 		}
 		$this->pages[ $slug ] = $config;
@@ -197,13 +207,13 @@ class Core {
 			'withSaveButton' => $current_page_config['withSaveButton'] ?? true,
 		];
 
-		// Use wp.domReady to ensure the DOM is fully loaded before mounting React
+		// Use wp.domReady to ensure the DOM is fully loaded before mounting React.
 		wp_add_inline_script(
 			'wp-sockets-js',
 			sprintf(
 				'wp.domReady( function() { window.WPSockets.createSocketsWpRoot( "%s", %s ); } );',
-				$current_page_slug,
-				json_encode( $init_config )
+				esc_js( $current_page_slug ),
+				wp_json_encode( $init_config )
 			)
 		);
 
