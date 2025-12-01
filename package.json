@@ -1,0 +1,13 @@
+{
+    "name": "@wp-sockets/composer-bridge",
+    "version": "1.0.0",
+    "description": "Bridge to bundle JS assets into the composer package",
+    "scripts": {
+        "build": "node scripts/build.js"
+    },
+    "dependencies": {
+        "@andreilupu/wp-sockets-js": "file:../wp-sockets-js"
+    },
+    "author": "Andrei Lupu",
+    "license": "GPL-2.0-or-later"
+}

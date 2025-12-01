@@ -1,0 +1,25 @@
+{
+    "name": "andreilupu/wp-sockets-core",
+    "description": "Core PHP library for WP Sockets - A modern React-powered admin page framework for WordPress.",
+    "type": "library",
+    "license": "GPL-2.0-or-later",
+    "authors": [
+        {
+            "name": "Andrei Lupu",
+            "email": "andrei@example.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "WPSockets\\Core\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "require": {
+        "php": ">=7.4"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
