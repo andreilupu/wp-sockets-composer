@@ -1,0 +1,1 @@
+<?php return array('dependencies' => array('wp-element', 'wp-hooks', 'wp-components', 'wp-data', 'wp-compose', 'wp-i18n', 'wp-core-data', 'wp-dom-ready'), 'version' => '0.1.0-alpha.4');
