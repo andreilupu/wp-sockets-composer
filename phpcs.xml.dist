@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<ruleset name="WP Sockets Core">
+	<description>WordPress Coding Standards for WP Sockets Core</description>
+
+	<!-- Check all PHP files -->
+	<file>./src</file>
+
+	<!-- Exclude vendor directory -->
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+
+	<!-- Use WordPress Coding Standards -->
+	<rule ref="WordPress">
+		<!-- Allow short array syntax -->
+		<exclude name="Generic.Arrays.DisallowShortArraySyntax"/>
+		
+		<!-- We use namespaces -->
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+	</rule>
+
+	<!-- Allow for WordPress VIP Go or stricter rules if needed -->
+	<rule ref="WordPress-Extra"/>
+	<rule ref="WordPress-Docs"/>
+
+	<!-- Allow error_log for development/debugging -->
+	<rule ref="WordPress.PHP.DevelopmentFunctions">
+		<properties>
+			<property name="exclude" type="array">
+				<element value="error_log"/>
+			</property>
+		</properties>
+	</rule>
+
+	<!-- Set minimum supported WP version -->
+	<config name="minimum_supported_wp_version" value="6.0"/>
+
+	<!-- Use colors in output -->
+	<arg name="colors"/>
+	
+	<!-- Show progress -->
+	<arg value="sp"/>
+	
+	<!-- Show sniff codes in all reports -->
+	<arg value="s"/>
+</ruleset>

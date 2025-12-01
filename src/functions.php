@@ -16,14 +16,15 @@ use WPSockets\Core\Core;
  * @since 1.0.0
  *
  * @param string $slug   The slug of the page.
- * @param array  $config The configuration for the page.
- *                       [
- *                           'page_title' => 'My Page',
- *                           'menu_title' => 'My Page',
- *                           'capability' => 'manage_options', // Optional, default: manage_options.
- *                           'mode'       => 'panel',          // Optional, default: panel.
- *                           'sockets'    => [],               // Array of socket definitions.
- *                       ]
+ * @param array  $config {
+ *     The configuration for the page.
+ *
+ *     @type string $page_title Page title.
+ *     @type string $menu_title Menu title.
+ *     @type string $capability Optional. Capability required. Default 'manage_options'.
+ *     @type string $mode       Optional. View mode. Default 'panel'.
+ *     @type array  $sockets    Array of socket definitions.
+ * }
  */
 function wp_sockets_register_page( $slug, $config ) {
 	Core::instance()->register_socket( $slug, $config );

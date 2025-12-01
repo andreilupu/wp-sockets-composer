@@ -37,7 +37,7 @@ class Core {
 	 *
 	 * @var array
 	 */
-	protected $pages = [];
+	protected $pages = array();
 
 	/**
 	 * Custom assets URL.
@@ -78,9 +78,9 @@ class Core {
 			return;
 		}
 
-		add_action( 'admin_menu', [ $this, 'register_admin_pages' ] );
-		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
-		add_action( 'admin_init', [ $this, 'register_settings' ] );
+		add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'admin_init', array( $this, 'register_settings' ) );
 
 		$this->initialized = true;
 	}
@@ -123,16 +123,16 @@ class Core {
 			register_setting(
 				'general', // Group? Or maybe a custom group? 'general' makes it available in options.
 				$option_name,
-				[
-					'type' => 'object',
-					'show_in_rest' => [
-						'schema' => [
-							'type' => 'object',
+				array(
+					'type'         => 'object',
+					'show_in_rest' => array(
+						'schema' => array(
+							'type'                 => 'object',
 							'additionalProperties' => true,
-						],
-					],
-					'default' => [],
-				]
+						),
+					),
+					'default'      => array(),
+				)
 			);
 		}
 	}
@@ -145,13 +145,13 @@ class Core {
 
 		foreach ( $pages as $page_slug => $config ) {
 			$capability = $config['capability'] ?? 'manage_options';
-			
+
 			add_menu_page(
 				$config['page_title'],
 				$config['menu_title'],
 				$capability,
 				$page_slug,
-				function() use ( $page_slug ) {
+				function () use ( $page_slug ) {
 					echo '<div id="wp-sockets-root-' . esc_attr( $page_slug ) . '"></div>';
 				}
 			);
@@ -164,14 +164,14 @@ class Core {
 	 * @param string $hook The current admin page hook.
 	 */
 	public function enqueue_scripts( $hook ) {
-		$pages = $this->get_pages();
-		$current_page_slug = null;
+		$pages               = $this->get_pages();
+		$current_page_slug   = null;
 		$current_page_config = null;
 
-		// Check if we are on one of our pages
+		// Check if we are on one of our pages.
 		foreach ( $pages as $slug => $config ) {
 			if ( 'toplevel_page_' . $slug === $hook ) {
-				$current_page_slug = $slug;
+				$current_page_slug   = $slug;
 				$current_page_config = $config;
 				break;
 			}
@@ -181,13 +181,13 @@ class Core {
 			return;
 		}
 
-		$asset_file = include( dirname( __DIR__ ) . '/assets/index.asset.php' );
+		$asset_file = include dirname( __DIR__ ) . '/assets/index.asset.php';
 
 		// Determine the assets URL
 		// If set_assets_url was called, use that.
 		// Otherwise, try to determine it relative to this file.
-		$js_url = $this->assets_url 
-			? $this->assets_url . '/index.js' 
+		$js_url = $this->assets_url
+			? $this->assets_url . '/index.js'
 			: plugins_url( '../assets/index.js', __FILE__ );
 
 		wp_enqueue_script(
@@ -198,14 +198,14 @@ class Core {
 			true
 		);
 
-		// Initialize the app
-		$init_config = [
-			'selector' => '#wp-sockets-root-' . $current_page_slug,
-			'mode' => $current_page_config['mode'] ?? 'panel',
-			'sockets' => $current_page_config['sockets'] ?? [],
-			'title' => $current_page_config['page_title'] ?? '',
+		// Initialize the app.
+		$init_config = array(
+			'selector'       => '#wp-sockets-root-' . $current_page_slug,
+			'mode'           => $current_page_config['mode'] ?? 'panel',
+			'sockets'        => $current_page_config['sockets'] ?? array(),
+			'title'          => $current_page_config['page_title'] ?? '',
 			'withSaveButton' => $current_page_config['withSaveButton'] ?? true,
-		];
+		);
 
 		// Use wp.domReady to ensure the DOM is fully loaded before mounting React.
 		wp_add_inline_script(
@@ -218,19 +218,19 @@ class Core {
 		);
 
 		if ( file_exists( dirname( __DIR__ ) . '/assets/index.css' ) ) {
-			$css_url = $this->assets_url 
-				? $this->assets_url . '/index.css' 
+			$css_url = $this->assets_url
+				? $this->assets_url . '/index.css'
 				: plugins_url( '../assets/index.css', __FILE__ );
-				
+
 			wp_enqueue_style(
 				'wp-sockets-css',
 				$css_url,
-				[ 'wp-components' ], // Depend on WordPress components styles
+				array( 'wp-components' ), // Depend on WordPress components styles.
 				$asset_file['version']
 			);
 		}
-		
-		// Enqueue WordPress components styles for proper Gutenberg UI
+
+		// Enqueue WordPress components styles for proper Gutenberg UI.
 		wp_enqueue_style( 'wp-components' );
 	}
 }
