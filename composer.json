@@ -1,5 +1,5 @@
 {
-    "name": "andreilupu/wp-sockets-core",
+    "name": "andreilupu/wp-sockets",
     "description": "Core PHP library for WP Sockets - A modern React-powered admin page framework for WordPress.",
     "type": "library",
     "license": "GPL-2.0-or-later",
