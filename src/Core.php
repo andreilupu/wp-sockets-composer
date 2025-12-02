@@ -25,12 +25,7 @@ class Core {
 	 */
 	protected static $instance = null;
 
-	/**
-	 * Whether the library has been initialized.
-	 *
-	 * @var bool
-	 */
-	protected $initialized = false;
+
 
 	/**
 	 * Registered pages.
@@ -74,15 +69,11 @@ class Core {
 	 * Initialize the library.
 	 */
 	public function init() {
-		if ( $this->initialized ) {
-			return;
-		}
-
 		add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
-
-		$this->initialized = true;
+		// Hook to init (not admin_init) so settings are registered for REST API.
+		// Use high priority to ensure all pages are registered first.
+		add_action( 'init', array( $this, 'register_settings' ), 100 );
 	}
 
 	/**
@@ -95,9 +86,7 @@ class Core {
 	 */
 	public function register_socket( $slug, $config ) {
 		// Auto-initialize if not already done.
-		if ( ! $this->initialized ) {
-			$this->init();
-		}
+		$this->init();
 
 		// Basic validation.
 		if ( empty( $slug ) || empty( $config['page_title'] ) || empty( $config['menu_title'] ) ) {
@@ -195,9 +184,23 @@ class Core {
 		// 1. Filter: wp_sockets_assets_url_{$page_slug}
 		// 2. Custom URL set via set_assets_url()
 		// 3. Default: plugins_url() relative to this file
-		$default_assets_url = $this->assets_url
-			? $this->assets_url
-			: plugins_url( '../assets', __FILE__ );
+		// 3. Default: Detect URL based on file path relative to content directory
+		if ( $this->assets_url ) {
+			$default_assets_url = $this->assets_url;
+		} else {
+			$assets_dir  = dirname( __DIR__ ) . '/assets';
+			$content_dir = wp_normalize_path( WP_CONTENT_DIR );
+			$file_path   = wp_normalize_path( $assets_dir );
+
+			if ( strpos( $file_path, $content_dir ) !== false ) {
+				// We are inside wp-content, so we can construct the URL reliably
+				$content_url        = untrailingslashit( content_url() );
+				$default_assets_url = str_replace( $content_dir, $content_url, $file_path );
+			} else {
+				// Fallback for weird symlink setups or outside wp-content
+				$default_assets_url = plugins_url( '../assets', __FILE__ );
+			}
+		}
 
 		/**
 		 * Filter the assets URL for a specific page.
@@ -208,7 +211,8 @@ class Core {
 		 * @param string $assets_url The assets directory URL (without trailing slash).
 		 * @param string $page_slug  The page slug.
 		 */
-		$assets_url = apply_filters( "wp_sockets_assets_url_{$current_page_slug}", $default_assets_url, $current_page_slug );
+		$option_name = $current_page_config['id'] ?? $current_page_slug;
+		$assets_url  = apply_filters( "wp_sockets_assets_url_{$option_name}", $default_assets_url, $current_page_slug );
 
 		$js_url = trailingslashit( $assets_url ) . 'index.js';
 
@@ -227,14 +231,18 @@ class Core {
 			'sockets'        => $current_page_config['sockets'] ?? array(),
 			'title'          => $current_page_config['page_title'] ?? '',
 			'withSaveButton' => $current_page_config['withSaveButton'] ?? true,
+			'autosave'       => $current_page_config['autosave'] ?? false,
 		);
+
+		// Use the correct option name (ID if set, otherwise slug)
+		$option_name = $current_page_config['id'] ?? $current_page_slug;
 
 		// Use wp.domReady to ensure the DOM is fully loaded before mounting React.
 		wp_add_inline_script(
 			'wp-sockets-js',
 			sprintf(
 				'wp.domReady( function() { window.WPSockets.createSocketsWpRoot( "%s", %s ); } );',
-				esc_js( $current_page_slug ),
+				esc_js( $option_name ),
 				wp_json_encode( $init_config )
 			)
 		);
