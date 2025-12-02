@@ -33,7 +33,8 @@ function wp_sockets_register_page( $slug, $config ) {
 /**
  * Initialize the WP Sockets library.
  *
- * This should be called once, typically in the 'init' hook.
+ * OPTIONAL: The framework auto-initializes when you call wp_sockets_register_page().
+ * Only call this if you need to set a custom assets URL before registering pages.
  *
  * @since 1.0.0
  *

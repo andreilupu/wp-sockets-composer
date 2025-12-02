@@ -88,10 +88,17 @@ class Core {
 	/**
 	 * Register a new admin page.
 	 *
+	 * Auto-initializes the framework if not already initialized.
+	 *
 	 * @param string $slug   The slug of the page.
 	 * @param array  $config The configuration for the page.
 	 */
 	public function register_socket( $slug, $config ) {
+		// Auto-initialize if not already done.
+		if ( ! $this->initialized ) {
+			$this->init();
+		}
+
 		// Basic validation.
 		if ( empty( $slug ) || empty( $config['page_title'] ) || empty( $config['menu_title'] ) ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -183,12 +190,27 @@ class Core {
 
 		$asset_file = include dirname( __DIR__ ) . '/assets/index.asset.php';
 
-		// Determine the assets URL
-		// If set_assets_url was called, use that.
-		// Otherwise, try to determine it relative to this file.
-		$js_url = $this->assets_url
-			? $this->assets_url . '/index.js'
-			: plugins_url( '../assets/index.js', __FILE__ );
+		// Determine the assets URL with filter support per page.
+		// Priority:
+		// 1. Filter: wp_sockets_assets_url_{$page_slug}
+		// 2. Custom URL set via set_assets_url()
+		// 3. Default: plugins_url() relative to this file
+		$default_assets_url = $this->assets_url
+			? $this->assets_url
+			: plugins_url( '../assets', __FILE__ );
+
+		/**
+		 * Filter the assets URL for a specific page.
+		 *
+		 * Allows developers to customize the assets location on a per-page basis.
+		 * Useful for themes or custom setups where the default path doesn't work.
+		 *
+		 * @param string $assets_url The assets directory URL (without trailing slash).
+		 * @param string $page_slug  The page slug.
+		 */
+		$assets_url = apply_filters( "wp_sockets_assets_url_{$current_page_slug}", $default_assets_url, $current_page_slug );
+
+		$js_url = trailingslashit( $assets_url ) . 'index.js';
 
 		wp_enqueue_script(
 			'wp-sockets-js',
@@ -218,9 +240,7 @@ class Core {
 		);
 
 		if ( file_exists( dirname( __DIR__ ) . '/assets/index.css' ) ) {
-			$css_url = $this->assets_url
-				? $this->assets_url . '/index.css'
-				: plugins_url( '../assets/index.css', __FILE__ );
+			$css_url = trailingslashit( $assets_url ) . 'index.css';
 
 			wp_enqueue_style(
 				'wp-sockets-css',
