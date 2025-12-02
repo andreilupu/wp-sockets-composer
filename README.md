@@ -8,6 +8,10 @@ A modern, React-powered framework for building WordPress Admin Pages. This libra
 composer require andreilupu/wp-sockets-core
 ```
 
+## Examples
+
+For complete working examples demonstrating both Composer and NPM integration methods, see the [wp-sockets-examples](https://github.com/andreilupu/wp-sockets-examples) repository.
+
 ## Usage
 
 ### 1. Initialize the Library
